@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracking</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Leaflet Ant Path CSS and JavaScript -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-ant-path/dist/leaflet-ant-path.css" />
+    <script src="https://unpkg.com/leaflet-ant-path/dist/leaflet-ant-path.js"></script>
+    <style>
+        #map { height: 100vh; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('drawPolyline', (data) => {
+            console.log('Received coordinates:', data);
+            drawPolyline(data);
+        });
+
+        const map = L.map('map').setView([0, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        let currentPath;
+
+        function drawPolyline(coordinates) {
+            if (currentPath) {
+                map.removeLayer(currentPath);
+            }
+
+            currentPath = L.polyline.antPath(coordinates, {
+                "delay": 400,
+                "dashArray": [10, 20],
+                "weight": 5,
+                "color": "#0000FF",
+                "pulseColor": "#FFFFFF"
+            }).addTo(map);
+
+            map.fitBounds(currentPath.getBounds());
+        }
+    </script>
+</body>
+</html>
